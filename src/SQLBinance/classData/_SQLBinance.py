@@ -1,8 +1,8 @@
 import threading
 import binance
 import binance.exceptions
-from classData.transaccion_data import Transaccion_data
-from entidades.Transaccion import Transaccion
+from .transaccion_data import Transaccion_data
+from ..entidades.Transaccion import Transaccion
 
 class _SQLBinance():
 

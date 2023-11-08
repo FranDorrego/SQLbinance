@@ -1,9 +1,9 @@
 import sqlite3
-from entidades.Transaccion import Transaccion
-from entidades.Comprobante import Comprobante
-from classData.conexion import Conexion
-from classData.comprobante_data import Comprobante_data
-from classData.informe_data import Informe_data
+from ..entidades.Transaccion import Transaccion
+from ..entidades.Comprobante import Comprobante
+from .conexion import Conexion
+from .comprobante_data import Comprobante_data
+from .informe_data import Informe_data
 
 class Transaccion_data():
 

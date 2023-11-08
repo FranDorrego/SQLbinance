@@ -1,4 +1,4 @@
-from entidades.Comprobante import Comprobante
+from .Comprobante import Comprobante
 
 
 class Transaccion:

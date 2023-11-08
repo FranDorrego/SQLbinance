@@ -67,32 +67,3 @@ BEGIN
     WHERE id = new.id;
 END;
 
-
-INSERT INTO Transacciones (orderNumber, advNo, tradeType, asset, fiat, fiatSymbol, amount, totalPrice, unitPrice, orderStatus, createTime, commission, counterPartNickName, advertisementRole) VALUES (
-    '20219644646554779648',
-    '11218246497340923904',
-    'BULL',
-    'BUSD',
-    'CNY',
-    '￥',
-    5000.00000000,
-    33400.00000000,
-    6.68,
-    'COMPLETED',
-    1619361369000,
-    0,
-    'ab***',
-    'TAKER'
-);
-
-UPDATE Transacciones
-SET id_informe = 1;
-
-SELECT 
-    tradeType,
-    SUM(totalPrice) AS total_fiat,
-    SUM(amount) AS total_cripto
-FROM Transacciones 
-WHERE id_informe = 1
-GROUP BY tradeType; 
-

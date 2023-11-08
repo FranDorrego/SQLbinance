@@ -1,4 +1,4 @@
-from entidades.Transaccion import Transaccion
+from .Transaccion import Transaccion
 
 class Informe:
 

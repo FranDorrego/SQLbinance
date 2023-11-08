@@ -1,6 +1,6 @@
 
-from entidades.Informe import Informe
-from classData.conexion import Conexion
+from ..entidades.Informe import Informe
+from .conexion import Conexion
 import sqlite3
 
 
@@ -51,7 +51,7 @@ class Informe_data():
         """ Trae completo un informe con todos los datos y clases rellenas """
 
         if self.transaccion_data is None:
-            from classData.transaccion_data import Transaccion_data
+            from .transaccion_data import Transaccion_data
             self.transaccion_data = Transaccion_data()
 
         try:
@@ -61,6 +61,10 @@ class Informe_data():
             consulta = f"SELECT * FROM Informe WHERE id = {id}"
             cursor.execute(consulta)
             resultado = cursor.fetchall()
+
+            if not resultado:
+                return None
+            
             obj_infomre = Informe.list_a_informe(resultado[0])
 
             # Trigo todos las transaciones del infomre
