@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "SQLBinance"
+version = "0.0.1"
+authors = [
+  { name="Franco Dorrego", email="francodorrego@gmail.com" },
+]
+description = "Librería para tomar las órdenes del comercio P2P De binance. Utiliza una base de datos SQLite, Manteniendo integridad y rapidez a la hora de tratar los datos"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/FranDorrego/SQLbinance"
+"Bug Tracker" = "https://github.com/pypa/sampleproject/issues"
