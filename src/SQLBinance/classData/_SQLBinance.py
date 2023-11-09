@@ -4,6 +4,7 @@ import binance.exceptions
 from .transaccion_data import Transaccion_data
 from ..entidades.Transaccion import Transaccion
 import random
+import time
 
 
 class _SQLBinance():
@@ -18,10 +19,29 @@ class _SQLBinance():
         return _SQLBinance.instancia
 
     def __init__(self, APIkey: str | None = None, APIsecret: str | None = None, activate_bucle=False, test = False, *args):
+        """ 
+        Parámetros:
+            APIkey: La clave API de Binance.
 
+            APIsecret: El secreto de la clave API de Binance.
+
+            activate_bucle: Activar o desactivar el bucle de operaciones de Binance. 
+                Si se establece en True, el bucle de operaciones se iniciará automáticamente. 
+                Si se establece en False, el bucle de operaciones no se iniciará.
+
+            test: Activar o desactivar el modo de prueba. 
+                Si se establece en True, las solicitudes a la API de Binance se enviarán en modo simulado. 
+                Si se establece en False, las solicitudes a la API de Binance se enviarán en modo de producción.
+
+            args: Argumentos adicionales para el constructor.
+        Retorno:
+            Ninguno.
+        """
         if APIkey is None or APIsecret is None:
             raise ValueError("Las claves API no están en el formato correcto. Verifica el constructor de _SQLBinance y sus claves.")
 
+        self.tiempo_actualizacion = 45
+        self.cantidad_llamadas_API_biance = {"cant": 0, "time" : time.time}
         self.APIkey = APIkey
         self.APIsecret = APIsecret
         self.client = binance.Client(APIkey, APIsecret)
@@ -50,24 +70,55 @@ class _SQLBinance():
             else:
                 raise e 
 
+    def add_llamada_binance(self):
+        """ Agrega una llamada al contador, cada 60 segundos se reinicia """
+        if time.time() - self.cantidad_llamadas_API_biance.get("time") > 60:
+            self.cantidad_llamadas_API_biance = {"cant": 0, "time" : time.time}
+
+        self.cantidad_llamadas_API_biance["cant"] += 1
+
     def c2c_bucle(self):
-        """ Es el que pide la informacion a binance """
+        """ 
+        El método c2c_bucle() es un método de la clase _SQLBinance que se utiliza para actualizar periódicamente los datos de Binance en la base de datos. 
+        El método se ejecuta en un bucle infinito y cada 45 segundos solicita el historial de operaciones C2C de Binance. 
+        Si el modo de prueba está activado, el historial se rellena automáticamente con datos de prueba.
+
+        Parámetros:
+            self: La instancia de la clase _SQLBinance que llama al método.
+        
+        Retorno:
+            Ninguno.
+        """
+
         # Creo una nueva conexion
         conexion = Transaccion_data()
+        timeSecunds = time.time()
 
         while self.control_bucle:
+            
+            if time.time() - timeSecunds > self.tiempo_actualizacion:
+                timeSecunds = time.time()
 
-            historial = self.client.get_c2c_trade_history()
-            historial = historial.get("data")
+                historial = list()
 
-            # Si data esta vacio y estamos en modo test, esto se autorellena
-            if self.test:
-                historial.append(self.dict_test(conexion))
+                # Pedimos el historial
+                try:
+                    historial = self.client.get_c2c_trade_history()
+                    self.add_llamada_binance()
+                    historial = historial.get("data")
+                except Exception as e:
+                    print(f"Ocurrio un error al pedir el historial de binance: {e}")
 
-            for operacion in historial:
-                transaccion = Transaccion.dict_a_transaccion(operacion)
-                if transaccion.orderStatus == 'COMPLETED':
-                    conexion.agrega_c2c(transaccion)
+                # Si data esta vacio y estamos en modo test, esto se autorellena
+                if self.test:
+                    historial.append(self.dict_test(conexion))
+
+                for operacion in historial:
+                    transaccion = Transaccion.dict_a_transaccion(operacion)
+                    if transaccion.orderStatus == 'COMPLETED':
+                        conexion.agrega_c2c(transaccion)
+
+            time.sleep(3)
 
         # Limpio la conexion
         conexion.__del__()

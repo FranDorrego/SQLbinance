@@ -89,7 +89,14 @@ class Informe_data():
 
     def informe_last_completo(self) -> Informe:
         """ Devuelve el informe anterior al acutal que ya esta finalizado """
-        return self.all_informe_id(self.id_informe_vijente()-1)
+        id_anterior = self.id_informe_vijente()
+
+        if id_anterior is None:
+            id_anterior = 0
+        else:
+            id_anterior-= 1
+            
+        return self.all_informe_id(id_anterior)
     
     def id_informe_vijente(self) -> int:
         """ Devuelve el ID con el informe aun vigente  """
