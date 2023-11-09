@@ -1,5 +1,6 @@
 
 from ..entidades.Informe import Informe
+from ..entidades.Transaccion import Transaccion
 from .conexion import Conexion
 import sqlite3
 
@@ -9,7 +10,7 @@ class Informe_data():
     def __init__(self, *agrs) -> None: 
         self.conexion = Conexion()
         self.transaccion_data = None
-        
+    
     def crea_informe(self, tipo_fiat = "", tipo_cripto = "") -> int:
         """ Inserta un informe nuevo """
         try:
@@ -54,6 +55,9 @@ class Informe_data():
             from .transaccion_data import Transaccion_data
             self.transaccion_data = Transaccion_data()
 
+        if id is None:
+            return None
+
         try:
             conn, cursor = self.conexion.get_conexion()
 
@@ -63,7 +67,7 @@ class Informe_data():
             resultado = cursor.fetchall()
 
             if not resultado:
-                return None
+                return Informe()
             
             obj_infomre = Informe.list_a_informe(resultado[0])
 
@@ -81,35 +85,27 @@ class Informe_data():
 
     def informe_actual_completo(self) -> Informe:
         """ Devuelve el informe actual que se esta utilizando para todas las operaciones """
-        return self.all_informe_id(self.informe_vijente())
+        return self.all_informe_id(self.id_informe_vijente())
 
     def informe_last_completo(self) -> Informe:
         """ Devuelve el informe anterior al acutal que ya esta finalizado """
-        return self.all_informe_id(self.informe_vijente()-1)
+        return self.all_informe_id(self.id_informe_vijente()-1)
     
-    def informe_vijente(self, tipo_fiat = "", tipo_cripto = "") -> int:
+    def id_informe_vijente(self) -> int:
         """ Devuelve el ID con el informe aun vigente  """
 
         try:
             conn, cursor = self.conexion.get_conexion()
 
             # Consulto por el ultimo informe
-            consulta = f"SELECT * FROM Informe WHERE id = (SELECT MAX(id) FROM Informe)"
+            consulta = f"SELECT MAX(id) FROM Informe WHERE open = 1"
             cursor.execute(consulta)
             resultado = cursor.fetchall()
             
-            # Si la respuesta esta vacia, creo una nueva
             if not resultado:
-                return self.crea_informe(tipo_fiat,tipo_cripto)
+                return None
             
-            obj_infomre = Informe.list_a_informe(resultado[0])
-            
-            # Si esta en 0 y tiene fiat y cripto, lo dejo de lado y creo uno nuevo
-            if obj_infomre.punto_equilibrio == 0 and obj_infomre.tipo_cripto != "" and obj_infomre.tipo_fiat != "":
-                return self.crea_informe(tipo_fiat,tipo_cripto)
-            
-            # si no lo esta, devuelvo ese ID 
-            return obj_infomre.id
+            return resultado[0][0]
         
         except sqlite3.Error as e:
             print(f"Error al tomar el informe en la base de datos: {str(e)}")
@@ -126,6 +122,9 @@ class Informe_data():
             resultado = cursor.fetchall()
             resultado = self.tuplas_a_dict(resultado)
 
+            open = True
+            if resultado.get("BUY").get("cant_cripto") - resultado.get("SELL").get("cant_cripto") == 0:
+                open = False
 
             consulta = """UPDATE Informe 
                     SET 
@@ -133,14 +132,16 @@ class Informe_data():
                         total_compra_fiat = ?,
                         total_venta_fiat = ?,
                         total_compra_cripto = ?,
-                        total_venta_cripto = ?
+                        total_venta_cripto = ?,
+                        open = ?
                     WHERE id = ?"""
 
-            valores = (resultado.get("SELL").get("cant_cripto") - resultado.get("BULL").get("cant_cripto"),
-                    resultado.get("BULL").get("cant_fiat"),
+            valores = (resultado.get("BUY").get("cant_cripto") - resultado.get("SELL").get("cant_cripto"),
+                    resultado.get("BUY").get("cant_fiat"),
                     resultado.get("SELL").get("cant_fiat"),
-                    resultado.get("BULL").get("cant_cripto"),
+                    resultado.get("BUY").get("cant_cripto"),
                     resultado.get("SELL").get("cant_cripto"),
+                    open,
                     id)
 
             cursor.execute(consulta, valores)
@@ -152,7 +153,7 @@ class Informe_data():
     
     def tuplas_a_dict(self, tuplas) -> {dict}:
         mi_dict = {'SELL': {'cant_fiat': 0.0, 'cant_cripto': 0.0},
-                'BULL': {'cant_fiat': 0.0, 'cant_cripto': 0.0}}
+                'BUY': {'cant_fiat': 0.0, 'cant_cripto': 0.0}}
 
         for tupla in tuplas:
             if len(tupla) >= 3:

@@ -5,22 +5,24 @@ class Transaccion:
 
     def __init__(
         self,
-        orderNumber,
-        advNo,
-        tradeType,
-        asset,
-        fiat,
-        fiatSymbol,
-        amount,
-        totalPrice,
-        unitPrice,
-        orderStatus,
-        createTime,
-        commission,
-        counterPartNickName,
-        advertisementRole,
-        id_informe
+        id = 0,
+        orderNumber = 0,
+        advNo = None,
+        tradeType = None,
+        asset = None,
+        fiat = None,
+        fiatSymbol = None,
+        amount = None,
+        totalPrice = None,
+        unitPrice = None,
+        orderStatus = None,
+        createTime = None,
+        commission = None,
+        counterPartNickName = None,
+        advertisementRole = None,
+        id_informe = None,
     ):
+        self.id = id
         self.orderNumber = orderNumber
         self.advNo = advNo
         self.tradeType = tradeType
@@ -38,8 +40,10 @@ class Transaccion:
         self.comprobante = Comprobante()
         self.id_informe = id_informe
 
+
     def dict_a_transaccion(data: dict):
         return Transaccion(
+            id=data.get("id"),
             orderNumber=data.get("orderNumber"),
             advNo=data.get("advNo"),
             tradeType=data.get("tradeType"),
@@ -59,23 +63,26 @@ class Transaccion:
 
     def list_a_transaccion(data: list):
         id_informe = None
-        try: id_informe=data[15]
-        except: pass
+
+        if len(data) > 15:
+            id_informe=data[15]
+
         
         return Transaccion(
-            orderNumber=data[0],
-            advNo=data[1],
-            tradeType=data[2],
-            asset=data[3],
-            fiat=data[4],
-            fiatSymbol=data[5],
-            amount=data[6],
-            totalPrice=data[7],
-            unitPrice=data[8],
-            orderStatus=data[9],
-            createTime=data[10],
-            commission=data[11],
-            counterPartNickName=data[12],
-            advertisementRole=data[13],
+            id = data[0],
+            orderNumber=data[1],
+            advNo=data[2],
+            tradeType=data[3],
+            asset=data[4],
+            fiat=data[5],
+            fiatSymbol=data[6],
+            amount=data[7],
+            totalPrice=data[8],
+            unitPrice=data[9],
+            orderStatus=data[10],
+            createTime=data[11],
+            commission=data[12],
+            counterPartNickName=data[13],
+            advertisementRole=data[14],
             id_informe = id_informe
         )

@@ -3,19 +3,21 @@ import binance
 import binance.exceptions
 from .transaccion_data import Transaccion_data
 from ..entidades.Transaccion import Transaccion
+import random
+
 
 class _SQLBinance():
 
     instancia = None
     bucle_operaciones = None
 
-    def __new__(cls, APIkey: str | None = None, APIsecret: str | None = None, activate_bucle=True, *args):
+    def __new__(cls, APIkey: str | None = None, APIsecret: str | None = None, activate_bucle=True, test = False, *args):
         if _SQLBinance.instancia is None:
             _SQLBinance.instancia = super(_SQLBinance, cls).__new__(cls)
-            _SQLBinance.instancia.__init__(APIkey, APIsecret, activate_bucle)
+            _SQLBinance.instancia.__init__(APIkey, APIsecret, activate_bucle, test)
         return _SQLBinance.instancia
 
-    def __init__(self, APIkey: str | None = None, APIsecret: str | None = None, activate_bucle=False):
+    def __init__(self, APIkey: str | None = None, APIsecret: str | None = None, activate_bucle=False, test = False, *args):
 
         if APIkey is None or APIsecret is None:
             raise ValueError("Las claves API no están en el formato correcto. Verifica el constructor de _SQLBinance y sus claves.")
@@ -23,12 +25,14 @@ class _SQLBinance():
         self.APIkey = APIkey
         self.APIsecret = APIsecret
         self.client = binance.Client(APIkey, APIsecret)
-        self.check_permisos()
         self.control_bucle = True
+        self.test = test
+        self.check_permisos()
 
         if activate_bucle:
             if _SQLBinance.bucle_operaciones is None:
                 _SQLBinance.bucle_operaciones = [threading.Thread(target=self.c2c_bucle, name="API Binance")]
+                _SQLBinance.bucle_operaciones[0].daemon = True
                 _SQLBinance.bucle_operaciones[0].start()
 
     def terminar_hilos(self):
@@ -55,22 +59,10 @@ class _SQLBinance():
 
             historial = self.client.get_c2c_trade_history()
             historial = historial.get("data")
-            historial.append({
-                "orderNumber": "20219644646554779678948",
-                "advNo": "11218246497340924563904",
-                "tradeType": "BULL",
-                "asset": "BUSD",
-                "fiat": "CNY",
-                "fiatSymbol": "￥",
-                "amount": "5000.00000000",
-                "totalPrice": "33400.00000000",
-                "unitPrice": "6.68",
-                "orderStatus": "COMPLETED",
-                "createTime": 1619361369000,
-                "commission": "0",
-                "counterPartNickName": "ab***",
-                "advertisementRole": "TAKER"
-            })
+
+            # Si data esta vacio y estamos en modo test, esto se autorellena
+            if self.test:
+                historial.append(self.dict_test(conexion))
 
             for operacion in historial:
                 transaccion = Transaccion.dict_a_transaccion(operacion)
@@ -80,4 +72,33 @@ class _SQLBinance():
         # Limpio la conexion
         conexion.__del__()
 
+    def dict_test(self, conexion : Transaccion_data) -> dict:
+        """ Devuelve un diccionario de demostracion, hace cordinar los numeros para frenar """
+
+        ultima_transaccion = conexion.last_transaccion()
+        ultima_transaccion.id += 1 
+
+        self.lado = random.choice(["BUY", "SELL"])
+        cantidad = 5000
+
+        return {
+                "orderNumber": ultima_transaccion.id ,
+                "advNo": "11218246497340924563904",
+                "tradeType": self.lado,
+                "asset": "BUSD",
+                "fiat": "CNY",
+                "fiatSymbol": "￥",
+                "amount": str(cantidad),
+                "totalPrice": "33400.00000000",
+                "unitPrice": "6.68",
+                "orderStatus": "COMPLETED",
+                "createTime": 1619361369000,
+                "commission": "0",
+                "counterPartNickName": "ab***",
+                "advertisementRole": "TAKER"
+            }
+        
+
+
+        
 

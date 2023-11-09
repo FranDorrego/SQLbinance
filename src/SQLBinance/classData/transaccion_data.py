@@ -14,7 +14,7 @@ class Transaccion_data():
 
     def __del__(self):
         # Cierra la conexion abierta aquí.
-        self.conexion.__del__()
+        self.conexion.cerrar_conexion()
 
     def all_transacciones(self) -> [Transaccion]:
         """
@@ -90,10 +90,11 @@ class Transaccion_data():
         try:
             conn, cursor = self.conexion.get_conexion()
             # Ejecutar una consulta SQL para seleccionar todas las filas de la tabla
-            cursor.execute(f"SELECT * FROM Transacciones JOIN comprobante ON Transacciones.id_comprobante = comprobante.id WHERE Transacciones.id = (SELECT MAX(id) FROM Transacciones)")
+            cursor.execute("SELECT * FROM Transacciones JOIN comprobante ON Transacciones.id_comprobante = comprobante.id WHERE Transacciones.id = (SELECT MAX(id) FROM Transacciones)")
             
             # Obtener todas las filas y mostrarlas
             rows = cursor.fetchall()
+            obj_transaccion = Transaccion()
 
             for row in rows:
                 obj_transaccion = Transaccion.list_a_transaccion(row[:15])
@@ -133,12 +134,18 @@ class Transaccion_data():
         Returns:
             None
         """
+
+        # Si ya existe no lo agrego
         if self.__if_exist(transaccion.orderNumber, "Transacciones", "orderNumber"):
             return self.trae_datos_base(transaccion)
 
-        conn, cursor = self.conexion.get_conexion()
-        id_informe = self._informe_data.informe_vijente(transaccion.fiat, transaccion.asset)
+        # Tomo el ID del ultimo informe
+        id_informe = self._informe_data.id_informe_vijente()
+        if id_informe is None:
+            id_informe = self._informe_data.crea_informe(transaccion.fiat, transaccion.asset)
 
+        # Agrego todo a la base
+        conn, cursor = self.conexion.get_conexion()
         consulta = "INSERT INTO Transacciones ( \
             orderNumber, advNo, tradeType, asset, fiat, fiatSymbol, \
             amount, totalPrice, unitPrice, orderStatus, createTime, commission, \
@@ -166,7 +173,7 @@ class Transaccion_data():
             
             conn.commit()
 
-            # Imprime los datos recién insertados
+            # Competo los demas datos
             cursor.execute("SELECT * FROM Transacciones WHERE orderNumber=?", (transaccion.orderNumber,))
             row = cursor.fetchone()
             if row:
@@ -239,6 +246,7 @@ class Transaccion_data():
 
         except sqlite3.Error as e:
             print(f"Error al actualizar datos en la base de datos: {str(e)}")
+
 
     
     

@@ -17,23 +17,14 @@ from .classData.informe_data import Informe_data
 from .classData.conexion import Conexion
 import time
 
-import subprocess
-
-def instalar_libreria():
-    try:
-        import binance
-    except ImportError:
-        subprocess.call(["pip", "install", "python-binance"])
-
 class SQLBinance(_SQLBinance,Informe_data,Transaccion_data,Comprobante_data,Conexion):
 
-    def __init__(self, APIkey: str | None = None, APIsecret: str | None = None, activate_bucle=True, path_db = "./base.db"):
-        instalar_libreria()
-        super().__init__(APIkey, APIsecret, activate_bucle)
+    def __init__(self, APIkey: str | None = None, APIsecret: str | None = None, activate_bucle=True, path_db = "./base.db", test = False):
+        super().__init__(APIkey, APIsecret, activate_bucle, test)
         Informe_data.__init__(self)
         Transaccion_data.__init__(self)
         Comprobante_data.__init__(self)
         Conexion.__init__(self,path_db)
 
-
-
+    def __del__(self):
+        return super().__del__()

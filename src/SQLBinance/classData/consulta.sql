@@ -58,12 +58,13 @@ Drop TRIGGER IF EXISTS crea_comprobante;
 CREATE TRIGGER crea_comprobante
 AFTER INSERT ON Transacciones
 BEGIN
-    -- Inserta un registro en la tabla Comprobante
     INSERT INTO Comprobante (path) VALUES ('');
-
-    -- Actualiza la columna id_comprobante en la tabla Transacciones
     UPDATE Transacciones
     SET id_comprobante = (SELECT last_insert_rowid() FROM Comprobante)
     WHERE id = new.id;
 END;
+
+SELECT * FROM Transacciones JOIN comprobante ON Transacciones.id_comprobante = comprobante.id WHERE Transacciones.id = (SELECT MAX(id) FROM Transacciones);
+
+SELECT * FROM Transacciones JOIN comprobante ON Transacciones.id_comprobante = comprobante.id WHERE Transacciones.id_informe =1;
 

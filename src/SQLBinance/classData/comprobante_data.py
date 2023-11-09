@@ -9,10 +9,6 @@ class Comprobante_data():
         self.conexion = Conexion()
         pass
 
-    def __del__(self):
-        # Cierra la conexion abierta aquí.
-        self.conexion.__del__()
-        
     def actualiza_comprobante(self, transaccion : Comprobante | Transaccion):
         """
         Actualiza los datos del comprobante en la tabla "comprobante" con base en el ID proporcionado.

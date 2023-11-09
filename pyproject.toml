@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "SQLBinance"
-version = "0.0.8"
+version = "0.0.01"
 authors = [
   { name="Franco Dorrego", email="francodorrego@gmail.com" },
 ]
