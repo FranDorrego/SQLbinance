@@ -27,4 +27,8 @@ class SQLBinance(_SQLBinance,Informe_data,Transaccion_data,Comprobante_data,Cone
         Conexion.__init__(self,path_db)
 
     def __del__(self):
-        return super().__del__()
+        super().terminar_hilos()
+        Conexion.cerrar_conexion()
+        Transaccion_data.__del__()
+        super().__del__()
+        return 

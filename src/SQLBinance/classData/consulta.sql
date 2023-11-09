@@ -24,6 +24,7 @@ CREATE TABLE Informe (
     total_compra_cripto REAL DEFAULT 0, 
     total_venta_cripto REAL DEFAULT 0, 
     tipo_cripto TEXT DEFAULT '' 
+    open BOOLEAN DEFAULT(TRUE)
 );
 
 -- Creo la tabla principal

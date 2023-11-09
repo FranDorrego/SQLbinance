@@ -1,10 +1,10 @@
 [build-system]
-requires = ["hatchling", "python-binance"]
+requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
 name = "SQLBinance"
-version = "0.0.02"
+version = "0.0.03"
 authors = [
   { name="Franco Dorrego", email="francodorrego@gmail.com" },
 ]

@@ -41,7 +41,7 @@ class _SQLBinance():
             raise ValueError("Las claves API no están en el formato correcto. Verifica el constructor de _SQLBinance y sus claves.")
 
         self.tiempo_actualizacion = 45
-        self.cantidad_llamadas_API_biance = {"cant": 0, "time" : time.time}
+        self.cantidad_llamadas_API_biance = {"cant": 0, "time" : time.time()}
         self.APIkey = APIkey
         self.APIsecret = APIsecret
         self.client = binance.Client(APIkey, APIsecret)
@@ -73,7 +73,7 @@ class _SQLBinance():
     def add_llamada_binance(self):
         """ Agrega una llamada al contador, cada 60 segundos se reinicia """
         if time.time() - self.cantidad_llamadas_API_biance.get("time") > 60:
-            self.cantidad_llamadas_API_biance = {"cant": 0, "time" : time.time}
+            self.cantidad_llamadas_API_biance = {"cant": 0, "time" : time.time()}
 
         self.cantidad_llamadas_API_biance["cant"] += 1
 
@@ -93,11 +93,15 @@ class _SQLBinance():
         # Creo una nueva conexion
         conexion = Transaccion_data()
         timeSecunds = time.time()
+        primera_vuelta = True
 
         while self.control_bucle:
             
-            if time.time() - timeSecunds > self.tiempo_actualizacion:
+            tiempo_transcurrido = time.time() - timeSecunds
+
+            if tiempo_transcurrido > self.tiempo_actualizacion or primera_vuelta:
                 timeSecunds = time.time()
+                primera_vuelta = False
 
                 historial = list()
 
@@ -118,7 +122,7 @@ class _SQLBinance():
                     if transaccion.orderStatus == 'COMPLETED':
                         conexion.agrega_c2c(transaccion)
 
-            time.sleep(3)
+            time.sleep(1)
 
         # Limpio la conexion
         conexion.__del__()
