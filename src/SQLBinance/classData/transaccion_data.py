@@ -36,7 +36,6 @@ class Transaccion_data():
             lista_transacciones = list()
 
             for row in rows:
-                print(row)
                 lista_transacciones.append(Transaccion.list_a_transaccion(row))
 
             return lista_transacciones
@@ -64,7 +63,6 @@ class Transaccion_data():
             lista_transacciones = list()
 
             for row in rows:
-                print(row)
                 obj_transaccion = Transaccion.list_a_transaccion(row[:16])
                 obj_comprobante = Comprobante.list_a_comprobante(row[17:])
                 obj_transaccion.comprobante = obj_comprobante

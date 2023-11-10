@@ -4,7 +4,6 @@ def instalar_libreria():
     try:
         import binance
     except ImportError:
-        print("og")
         subprocess.call(["pip", "install", "python-binance"])
         
 instalar_libreria()
